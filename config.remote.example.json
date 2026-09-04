@@ -1,0 +1,54 @@
+{
+  "node_id": "worker-01",
+  "bind": "0.0.0.0",
+  "port": 8765,
+  "allow_insecure_remote_bind": false,
+  "token_auth_enabled": false,
+  "cors_allow_origin": "",
+  "max_body_bytes": 100663296,
+  "max_file_transfer_bytes": 67108864,
+  "task_workers": 4,
+  "allowed_roots": [
+    "~/omega-worker-data"
+  ],
+  "create_allowed_roots": true,
+  "allowed_actions": [
+    "status",
+    "system_info",
+    "list_dir",
+    "stat_path",
+    "find_files",
+    "read_text",
+    "write_text",
+    "append_text",
+    "mkdir",
+    "copy",
+    "move",
+    "get_file",
+    "put_file",
+    "list_services",
+    "run_service"
+  ],
+  "denied_actions": [
+    "delete_path",
+    "run_process",
+    "terminate_process"
+  ],
+  "allow_process_execution": false,
+  "allowed_executables": [],
+  "allow_process_termination": false,
+  "services": {},
+  "signed_owner": {
+    "enabled": true,
+    "owner_public_key": "owner_public.pem",
+    "max_ttl_seconds": 120,
+    "max_clock_skew_seconds": 60,
+    "nonce_retention_seconds": 86400,
+    "allowed_operations": [
+      "call",
+      "submit",
+      "get_task",
+      "capabilities"
+    ]
+  }
+}
