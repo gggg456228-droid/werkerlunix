@@ -138,27 +138,36 @@ nohup "$ROOT/start_linux.sh" > .runtime/worker.log 2>&1 &
 PID=$!
 printf '%s\n' "$PID" > .runtime/worker.pid
 
-sleep 1
-if ! kill -0 "$PID" 2>/dev/null; then
-  cat .runtime/worker.log >&2 || true
-  fail "Worker exited during startup"
-fi
-
 HEALTH_HOST="$BIND"
 if [ "$HEALTH_HOST" = "0.0.0.0" ] || [ "$HEALTH_HOST" = "::" ]; then
   HEALTH_HOST="127.0.0.1"
 fi
 
-HEALTH="$($VENV_PY - <<PY
+log "Waiting for worker health endpoint"
+HEALTH=""
+for _attempt in $(seq 1 30); do
+  if ! kill -0 "$PID" 2>/dev/null; then
+    cat .runtime/worker.log >&2 || true
+    fail "Worker exited during startup"
+  fi
+
+  if HEALTH="$($VENV_PY - <<PY 2>/dev/null
 import urllib.request
 url = "http://${HEALTH_HOST}:${PORT}/health"
-with urllib.request.urlopen(url, timeout=5) as r:
+with urllib.request.urlopen(url, timeout=2) as r:
     print(r.read().decode("utf-8"))
 PY
-)" || {
+)"; then
+    break
+  fi
+
+  sleep 1
+done
+
+if [ -z "$HEALTH" ]; then
   cat .runtime/worker.log >&2 || true
-  fail "Worker health check failed"
-}
+  fail "Worker health check timed out after 30 seconds"
+fi
 
 printf '\n'
 printf '===============================================================\n'
